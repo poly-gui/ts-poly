@@ -35,13 +35,13 @@ class InvokeCallback implements NanoPackMessage {
 	}
 
 	public bytesWithLengthPrefix(): Uint8Array {
-		const writer = new NanoBufWriter(12)
-		writer.writeTypeId(2, 4)
+		const writer = new NanoBufWriter(12, true)
+		writer.writeTypeId(2)
 
 		writer.appendInt32(this.handle)
 		writer.writeFieldSize(1, 4)
 
-		writer.writeLength(writer.currentSize - 4)
+		writer.writeLengthPrefix(writer.currentSize - 4)
 
 		return writer.bytes
 	}
