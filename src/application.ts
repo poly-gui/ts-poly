@@ -4,6 +4,7 @@ import { NanoPackMessage } from "nanopack"
 import { makeNanoPackMessage } from "./message-factory.js"
 import { readInt32LEInByteArray } from "./util/byte-util.js"
 import { InvokeCallback } from "./native-messages/invoke-callback.np.js"
+import { IdRegistry } from "./id-registry.js"
 
 interface ApplicationConfig {
 	messageChannel: MessageChannel
@@ -12,6 +13,7 @@ interface ApplicationConfig {
 interface ApplicationContext {
 	messageChannel: MessageChannel
 	callbackRegistry: CallbackRegistry
+	idRegistry: IdRegistry
 }
 
 async function handleMessage(
@@ -42,6 +44,7 @@ function createApplication(config: ApplicationConfig): ApplicationContext {
 	return {
 		messageChannel: config.messageChannel,
 		callbackRegistry: new CallbackRegistry(),
+		idRegistry: new IdRegistry(),
 	}
 }
 
@@ -56,4 +59,5 @@ async function runApplication(context: ApplicationContext) {
 }
 
 export type { ApplicationContext }
+export type { IdRegistry }
 export { createApplication, runApplication }
