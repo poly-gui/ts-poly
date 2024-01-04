@@ -24,12 +24,16 @@ class InvokeCallback implements NanoPackMessage {
 		return 2
 	}
 
-	public bytes(): Uint8Array {
-		const writer = new NanoBufWriter(8)
+	public bytes(withLengthPrefix: boolean = false): Uint8Array {
+		const writer = new NanoBufWriter(withLengthPrefix ? 12 : 8)
 		writer.writeTypeId(InvokeCallback.TYPE_ID)
 
 		writer.appendInt32(this.handle)
 		writer.writeFieldSize(1, 4)
+
+		if (withLengthPrefix) {
+			writer.writeLength(writer.currentSize - 4)
+		}
 
 		return writer.bytes
 	}

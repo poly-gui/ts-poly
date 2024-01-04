@@ -30,7 +30,7 @@
     "prettier": "^3.1.1"
   },
   "dependencies": {
-    "nanopack": "git+https://github.com/poly-gui/ts-nanopack.git#main"
+    "nanopack": "github:poly-gui/ts-nanopack#main"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
