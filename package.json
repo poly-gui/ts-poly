@@ -1,0 +1,41 @@
+{
+  "name": "poly",
+  "type": "module",
+  "exports": {
+    "./application": {
+      "import": "./dist/application.js",
+      "types": "./dist/application.d.ts"
+    },
+    "./bridge": {
+      "import": "./dist/bridge/bridge.js",
+      "types": "./dist/bridge/bridge.d.ts"
+    },
+    "./window": {
+      "import": "./dist/windowing/create-window.js",
+      "types": "./dist/windowing/create-window.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepare": "tsc -p tsconfig.build.json"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "latest",
+    "@typescript-eslint/parser": "latest",
+    "bun-types": "latest",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-only-warn": "^1.1.0",
+    "eslint-plugin-prettier": "^5.0.1",
+    "prettier": "^3.1.1"
+  },
+  "dependencies": {
+    "nanopack": "git+https://github.com/poly-gui/ts-nanopack.git#main"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "trustedDependencies": [
+    "nanopack"
+  ]
+}
