@@ -48,9 +48,9 @@ class CreateWindow implements NanoPackMessage {
 		return 10
 	}
 
-	public bytes(withLengthPrefix: boolean = false): Uint8Array {
-		const writer = new NanoBufWriter(withLengthPrefix ? 28 : 24)
-		writer.writeTypeId(CreateWindow.TYPE_ID)
+	public bytes(): Uint8Array {
+		const writer = new NanoBufWriter(24)
+		writer.writeTypeId(10)
 
 		const titleByteLength = writer.appendString(this.title)
 		writer.writeFieldSize(0, titleByteLength)
@@ -67,9 +67,29 @@ class CreateWindow implements NanoPackMessage {
 		const tagByteLength = writer.appendString(this.tag)
 		writer.writeFieldSize(4, tagByteLength)
 
-		if (withLengthPrefix) {
-			writer.writeLength(writer.currentSize - 4)
-		}
+		return writer.bytes
+	}
+
+	public bytesWithLengthPrefix(): Uint8Array {
+		const writer = new NanoBufWriter(28)
+		writer.writeTypeId(10, 4)
+
+		const titleByteLength = writer.appendString(this.title)
+		writer.writeFieldSize(0, titleByteLength)
+
+		const descriptionByteLength = writer.appendString(this.description)
+		writer.writeFieldSize(1, descriptionByteLength)
+
+		writer.appendInt32(this.width)
+		writer.writeFieldSize(2, 4)
+
+		writer.appendInt32(this.height)
+		writer.writeFieldSize(3, 4)
+
+		const tagByteLength = writer.appendString(this.tag)
+		writer.writeFieldSize(4, tagByteLength)
+
+		writer.writeLength(writer.currentSize - 4)
 
 		return writer.bytes
 	}

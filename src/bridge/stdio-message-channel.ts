@@ -57,7 +57,7 @@ class StdioMessageChannel implements MessageChannel {
 	}
 
 	async sendMessage(message: NanoPackMessage) {
-		await this.stdio.stdout(message.bytes(true))
+		await this.stdio.stdout(message.bytesWithLengthPrefix())
 	}
 }
 
