@@ -10,6 +10,7 @@ class CreateWindow implements NanoPackMessage {
 		public description: string,
 		public width: number,
 		public height: number,
+		public tag: string,
 	) {}
 
 	public static fromBytes(
@@ -17,7 +18,7 @@ class CreateWindow implements NanoPackMessage {
 	): { bytesRead: number; result: CreateWindow } | null {
 		const reader = new NanoBufReader(bytes)
 
-		let ptr = 20
+		let ptr = 24
 
 		const titleByteLength = reader.readFieldSize(0)
 		const title = reader.readString(ptr, titleByteLength)
@@ -33,9 +34,13 @@ class CreateWindow implements NanoPackMessage {
 		const height = reader.readInt32(ptr)
 		ptr += 4
 
+		const tagByteLength = reader.readFieldSize(4)
+		const tag = reader.readString(ptr, tagByteLength)
+		ptr += tagByteLength
+
 		return {
 			bytesRead: ptr,
-			result: new CreateWindow(title, description, width, height),
+			result: new CreateWindow(title, description, width, height, tag),
 		}
 	}
 
@@ -44,7 +49,7 @@ class CreateWindow implements NanoPackMessage {
 	}
 
 	public bytes(): Uint8Array {
-		const writer = new NanoBufWriter(20)
+		const writer = new NanoBufWriter(24)
 		writer.writeTypeId(CreateWindow.TYPE_ID)
 
 		const titleByteLength = writer.appendString(this.title)
@@ -58,6 +63,9 @@ class CreateWindow implements NanoPackMessage {
 
 		writer.appendInt32(this.height)
 		writer.writeFieldSize(3, 4)
+
+		const tagByteLength = writer.appendString(this.tag)
+		writer.writeFieldSize(4, tagByteLength)
 
 		return writer.bytes
 	}

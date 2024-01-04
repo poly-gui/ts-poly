@@ -6,6 +6,7 @@ interface WindowConfig {
 	description: string
 	width: number
 	height: number
+	tag: string
 }
 
 async function createWindow(config: WindowConfig, context: ApplicationContext) {
@@ -14,6 +15,7 @@ async function createWindow(config: WindowConfig, context: ApplicationContext) {
 		config.description,
 		config.width,
 		config.height,
+		config.tag,
 	)
 	await context.messageChannel.sendMessage(createWindowMessage)
 }

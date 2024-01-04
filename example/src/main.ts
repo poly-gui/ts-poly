@@ -23,6 +23,7 @@ createWindow(
 		description: "An example Poly application written in TypeScript.",
 		width: 600,
 		height: 400,
+		tag: "main",
 	},
 	context,
 )
