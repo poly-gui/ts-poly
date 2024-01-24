@@ -17,7 +17,12 @@ class CreateWindow implements NanoPackMessage {
 		bytes: Uint8Array,
 	): { bytesRead: number; result: CreateWindow } | null {
 		const reader = new NanoBufReader(bytes)
+		return CreateWindow.fromReader(reader)
+	}
 
+	public static fromReader(
+		reader: NanoBufReader,
+	): { bytesRead: number; result: CreateWindow } | null {
 		let ptr = 24
 
 		const titleByteLength = reader.readFieldSize(0)
@@ -71,7 +76,7 @@ class CreateWindow implements NanoPackMessage {
 	}
 
 	public bytesWithLengthPrefix(): Uint8Array {
-		const writer = new NanoBufWriter(28, true)
+		const writer = new NanoBufWriter(24 + 4, true)
 		writer.writeTypeId(10)
 
 		const titleByteLength = writer.appendString(this.title)

@@ -5,19 +5,31 @@ import { NanoBufReader, NanoBufWriter, type NanoPackMessage } from "nanopack"
 class InvokeCallback implements NanoPackMessage {
 	public static TYPE_ID = 2
 
-	constructor(public handle: number) {}
+	constructor(
+		public handle: number,
+		public args: NanoBufReader,
+	) {}
 
 	public static fromBytes(
 		bytes: Uint8Array,
 	): { bytesRead: number; result: InvokeCallback } | null {
 		const reader = new NanoBufReader(bytes)
+		return InvokeCallback.fromReader(reader)
+	}
 
-		let ptr = 8
+	public static fromReader(
+		reader: NanoBufReader,
+	): { bytesRead: number; result: InvokeCallback } | null {
+		let ptr = 12
 
 		const handle = reader.readInt32(ptr)
 		ptr += 4
 
-		return { bytesRead: ptr, result: new InvokeCallback(handle) }
+		const argsByteLength = reader.readFieldSize(1)
+		const args = reader.newReaderAt(ptr, ptr + argsByteLength)
+		ptr += argsByteLength
+
+		return { bytesRead: ptr, result: new InvokeCallback(handle, args) }
 	}
 
 	public get typeId(): number {
@@ -25,21 +37,27 @@ class InvokeCallback implements NanoPackMessage {
 	}
 
 	public bytes(): Uint8Array {
-		const writer = new NanoBufWriter(8)
+		const writer = new NanoBufWriter(12)
 		writer.writeTypeId(2)
 
 		writer.appendInt32(this.handle)
-		writer.writeFieldSize(1, 4)
+		writer.writeFieldSize(0, 4)
+
+		writer.writeFieldSize(1, this.args.bytes.byteLength)
+		writer.appendBytes(this.args.bytes)
 
 		return writer.bytes
 	}
 
 	public bytesWithLengthPrefix(): Uint8Array {
-		const writer = new NanoBufWriter(12, true)
+		const writer = new NanoBufWriter(12 + 4, true)
 		writer.writeTypeId(2)
 
 		writer.appendInt32(this.handle)
-		writer.writeFieldSize(1, 4)
+		writer.writeFieldSize(0, 4)
+
+		writer.writeFieldSize(1, this.args.bytes.byteLength)
+		writer.appendBytes(this.args.bytes)
 
 		writer.writeLengthPrefix(writer.currentSize - 4)
 

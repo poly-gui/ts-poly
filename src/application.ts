@@ -1,7 +1,8 @@
 import { MessageChannel } from "./bridge/message-channel.js"
-import { CallbackHandle, CallbackRegistry } from "./callback-registry.js"
+import { CallbackRegistry } from "./callback-registry.js"
+import { MessageHandlerRegistry } from "./message-handler-registry.js"
 import { NanoPackMessage } from "nanopack"
-import { makeNanoPackMessage } from "./message-factory.js"
+import { makeNanoPackMessage } from "./message-factory.np.js"
 import { readInt32LEInByteArray } from "./util/byte-util.js"
 import { InvokeCallback } from "./native-messages/invoke-callback.np.js"
 import { IdRegistry } from "./id-registry.js"
@@ -12,6 +13,7 @@ interface ApplicationConfig {
 
 interface ApplicationContext {
 	messageChannel: MessageChannel
+	messageHandlers: MessageHandlerRegistry
 	callbackRegistry: CallbackRegistry
 	idRegistry: IdRegistry
 }
@@ -22,27 +24,22 @@ async function handleMessage(
 ) {
 	switch (message.typeId) {
 		case InvokeCallback.TYPE_ID:
-			await invokeCallback(
-				(message as unknown as InvokeCallback).handle,
-				context,
-			)
+			await invokeCallback(message as unknown as InvokeCallback, context)
 			break
 	}
 }
 
 async function invokeCallback(
-	handle: CallbackHandle,
+	message: InvokeCallback,
 	context: ApplicationContext,
 ) {
-	const cb = context.callbackRegistry.findCallback(handle)
-	if (cb) {
-		cb()
-	}
+	context.callbackRegistry.invokeCallback(message.handle, message.args)
 }
 
 function createApplication(config: ApplicationConfig): ApplicationContext {
 	return {
 		messageChannel: config.messageChannel,
+		messageHandlers: new MessageHandlerRegistry(),
 		callbackRegistry: new CallbackRegistry(),
 		idRegistry: new IdRegistry(),
 	}
