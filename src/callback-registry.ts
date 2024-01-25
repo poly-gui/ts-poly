@@ -45,7 +45,7 @@ class CallbackRegistry {
 	}
 
 	private newCallbackHandle(): CallbackHandle {
-		return Math.floor(Math.random() * 2 ** 32)
+		return Math.floor(Math.random() * (2 ** 32))
 	}
 }
 
