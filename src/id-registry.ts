@@ -24,6 +24,10 @@ class IdRegistry {
 		existingIds?.delete(id)
 	}
 
+	public isIdRegistered(id: number, type: string): boolean {
+		return this.ids.get(type)?.has(id) ?? false
+	}
+
 	private randomId() {
 		return Math.floor(Math.random() * 2147483648)
 	}
