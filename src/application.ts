@@ -49,8 +49,8 @@ function createApplication(config: ApplicationConfig): ApplicationContext {
 	registries.set(MessageHandlerRegistry.KEY, new MessageHandlerRegistry())
 
 	return {
+		registries,
 		messageChannel: config.messageChannel,
-		registries: new Map(),
 
 		get messageHandlers(): MessageHandlerRegistry {
 			return this.getRegistry<MessageHandlerRegistry>(
