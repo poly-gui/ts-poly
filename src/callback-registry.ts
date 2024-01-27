@@ -6,6 +6,7 @@ type Callback = (argBytes: NanoBufReader) => void
 class CallbackRegistry {
 	private owners: Map<string, Set<CallbackHandle>> = new Map()
 	private cbMap: Map<CallbackHandle, Callback> = new Map()
+	private cbHandleMap: Map<Callback, CallbackHandle> = new Map()
 
 	constructor() {}
 
@@ -13,6 +14,7 @@ class CallbackRegistry {
 		const handle = this.newCallbackHandle()
 
 		this.cbMap.set(handle, cb)
+		this.cbHandleMap.set(cb, handle)
 
 		if (owner) {
 			let owned = this.owners.get(owner)
@@ -28,6 +30,10 @@ class CallbackRegistry {
 
 	public findCallback(handle: CallbackHandle): Callback | null {
 		return this.cbMap.get(handle) ?? null
+	}
+
+	public callbackHandleOf(callback: Callback): CallbackHandle | null {
+		return this.cbHandleMap.get(callback) ?? null
 	}
 
 	public invokeCallback(handle: CallbackHandle, argBytes: NanoBufReader) {
