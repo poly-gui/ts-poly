@@ -1,6 +1,8 @@
 type MessageHandler = (messageBytes: Uint8Array) => Promise<void>
 
 class MessageHandlerRegistry {
+	static KEY = "Poly.MessageHandlerRegistry"
+
 	private handlers: MessageHandler[] = []
 
 	public addHandler(handler: MessageHandler) {

@@ -4,6 +4,8 @@ type CallbackHandle = number
 type Callback = (argBytes: NanoBufReader) => void
 
 class CallbackRegistry {
+	static KEY = "Poly.CallbackRegistry"
+
 	private owners: Map<string, Set<CallbackHandle>> = new Map()
 	private cbMap: Map<CallbackHandle, Callback> = new Map()
 	private cbHandleMap: Map<Callback, CallbackHandle> = new Map()

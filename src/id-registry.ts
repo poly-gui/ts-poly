@@ -1,4 +1,6 @@
 class IdRegistry {
+	static KEY = "Poly.IdRegistry"
+
 	private ids = new Map<string, Set<number>>()
 
 	public newId(type: string): number {

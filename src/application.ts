@@ -13,9 +13,15 @@ interface ApplicationConfig {
 
 interface ApplicationContext {
 	messageChannel: MessageChannel
+	registries: Map<string, unknown>
+
 	messageHandlers: MessageHandlerRegistry
 	callbackRegistry: CallbackRegistry
 	idRegistry: IdRegistry
+
+	addRegistry<TReg>(key: string, registry: TReg): void
+
+	getRegistry<TReg>(key: string): TReg | null
 }
 
 async function handleMessage(
@@ -37,11 +43,36 @@ async function invokeCallback(
 }
 
 function createApplication(config: ApplicationConfig): ApplicationContext {
+	const registries = new Map()
+	registries.set(CallbackRegistry.KEY, new CallbackRegistry())
+	registries.set(IdRegistry.KEY, new IdRegistry())
+	registries.set(MessageHandlerRegistry.KEY, new MessageHandlerRegistry())
+
 	return {
 		messageChannel: config.messageChannel,
-		messageHandlers: new MessageHandlerRegistry(),
-		callbackRegistry: new CallbackRegistry(),
-		idRegistry: new IdRegistry(),
+		registries: new Map(),
+
+		get messageHandlers(): MessageHandlerRegistry {
+			return this.getRegistry<MessageHandlerRegistry>(
+				MessageHandlerRegistry.KEY,
+			)!
+		},
+
+		get callbackRegistry(): CallbackRegistry {
+			return this.getRegistry<CallbackRegistry>(CallbackRegistry.KEY)!
+		},
+
+		get idRegistry(): IdRegistry {
+			return this.getRegistry<IdRegistry>(IdRegistry.KEY)!
+		},
+
+		addRegistry<TReg>(key: string, registry: TReg) {
+			this.registries.set(key, registry)
+		},
+
+		getRegistry<TReg>(key: string): TReg | null {
+			return (this.registries.get(key) as TReg) ?? null
+		},
 	}
 }
 
