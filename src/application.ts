@@ -3,7 +3,6 @@ import { CallbackRegistry } from "./callback-registry.js"
 import { MessageHandlerRegistry } from "./message-handler-registry.js"
 import { NanoPackMessage } from "nanopack"
 import { makeNanoPackMessage } from "./message-factory.np.js"
-import { readInt32LEInByteArray } from "./util/byte-util.js"
 import { InvokeCallback } from "./native-messages/invoke-callback.np.js"
 import { IdRegistry } from "./id-registry.js"
 
@@ -78,8 +77,7 @@ function createApplication(config: ApplicationConfig): ApplicationContext {
 
 async function runApplication(context: ApplicationContext) {
 	for await (const messageBytes of context.messageChannel.incomingMessageBytes()) {
-		const typeId = readInt32LEInByteArray(messageBytes, 0)
-		const maybeMessage = makeNanoPackMessage(messageBytes, typeId)
+		const maybeMessage = makeNanoPackMessage(messageBytes)
 		if (maybeMessage) {
 			await handleMessage(maybeMessage.result, context)
 		}

@@ -12,12 +12,12 @@ class StdioMessageChannel implements MessageChannel {
 
 	async *incomingMessageBytes(): AsyncGenerator<Uint8Array> {
 		for await (const chunk of this.stdio.stdin()) {
-			yield chunk
+			yield chunk.subarray(4)
 		}
 	}
 
 	async sendMessage(message: NanoPackMessage) {
-		await this.stdio.stdout(message.bytes())
+		await this.stdio.stdout(message.bytesWithLengthPrefix())
 	}
 }
 
