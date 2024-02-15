@@ -1,7 +1,7 @@
 CreateWindow:
   typeid: 10
-  title: string:0
-  description: string:1
-  width: int32:2
-  height: int32:3
-  tag: string:4
+  title: string
+  description: string
+  width: int32
+  height: int32
+  tag: string

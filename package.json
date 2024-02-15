@@ -17,7 +17,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "build:nanoc": "nanoc --language=ts --factory-out=src $(find src -name \"*.yml\")",
+    "nanoc": "nanoc --language=ts --factory-out=src $(find src -name \"*.yml\")",
     "prepare": "tsc -p tsconfig.build.json"
   },
   "devDependencies": {
