@@ -8,6 +8,7 @@ class InvokeCallback implements NanoPackMessage {
 	constructor(
 		public handle: number,
 		public args: NanoBufReader,
+		public replyTo: number | null,
 	) {}
 
 	public static fromBytes(
@@ -20,7 +21,7 @@ class InvokeCallback implements NanoPackMessage {
 	public static fromReader(
 		reader: NanoBufReader,
 	): { bytesRead: number; result: InvokeCallback } | null {
-		let ptr = 12
+		let ptr = 16
 
 		const handle = reader.readInt32(ptr)
 		ptr += 4
@@ -29,7 +30,15 @@ class InvokeCallback implements NanoPackMessage {
 		const args = reader.newReaderAt(ptr, ptr + argsByteLength)
 		ptr += argsByteLength
 
-		return { bytesRead: ptr, result: new InvokeCallback(handle, args) }
+		let replyTo: number | null
+		if (reader.readFieldSize(2) >= 0) {
+			replyTo = reader.readInt32(ptr)
+			ptr += 4
+		} else {
+			replyTo = null
+		}
+
+		return { bytesRead: ptr, result: new InvokeCallback(handle, args, replyTo) }
 	}
 
 	public get typeId(): number {
@@ -37,7 +46,7 @@ class InvokeCallback implements NanoPackMessage {
 	}
 
 	public bytes(): Uint8Array {
-		const writer = new NanoBufWriter(12)
+		const writer = new NanoBufWriter(16)
 		writer.writeTypeId(2)
 
 		writer.appendInt32(this.handle)
@@ -45,12 +54,19 @@ class InvokeCallback implements NanoPackMessage {
 
 		writer.writeFieldSize(1, this.args.bytes.byteLength)
 		writer.appendBytes(this.args.bytes)
+
+		if (this.replyTo) {
+			writer.appendInt32(this.replyTo)
+			writer.writeFieldSize(2, 4)
+		} else {
+			writer.writeFieldSize(2, -1)
+		}
 
 		return writer.bytes
 	}
 
 	public bytesWithLengthPrefix(): Uint8Array {
-		const writer = new NanoBufWriter(12 + 4, true)
+		const writer = new NanoBufWriter(16 + 4, true)
 		writer.writeTypeId(2)
 
 		writer.appendInt32(this.handle)
@@ -58,6 +74,13 @@ class InvokeCallback implements NanoPackMessage {
 
 		writer.writeFieldSize(1, this.args.bytes.byteLength)
 		writer.appendBytes(this.args.bytes)
+
+		if (this.replyTo) {
+			writer.appendInt32(this.replyTo)
+			writer.writeFieldSize(2, 4)
+		} else {
+			writer.writeFieldSize(2, -1)
+		}
 
 		writer.writeLengthPrefix(writer.currentSize - 4)
 

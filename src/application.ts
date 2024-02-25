@@ -1,10 +1,11 @@
 import { MessageChannel } from "./bridge/message-channel.js"
 import { CallbackRegistry } from "./callback-registry.js"
 import { MessageHandlerRegistry } from "./message-handler-registry.js"
-import { NanoPackMessage } from "nanopack"
+import { NanoBufReader, NanoPackMessage } from "nanopack"
 import { makeNanoPackMessage } from "./message-factory.np.js"
-import { InvokeCallback } from "./native-messages/invoke-callback.np.js"
+import { InvokeCallback } from "./messages/invoke-callback.np.js"
 import { IdRegistry } from "./id-registry.js"
+import { ReplyFromCallback } from "./messages/reply-from-callback.np.js"
 
 interface ApplicationConfig {
 	messageChannel: MessageChannel
@@ -38,7 +39,15 @@ async function invokeCallback(
 	message: InvokeCallback,
 	context: ApplicationContext,
 ) {
-	context.callbackRegistry.invokeCallback(message.handle, message.args)
+	const result = context.callbackRegistry.invokeCallback(
+		message.handle,
+		message.args,
+	)
+	if (result && message.replyTo) {
+		await context.messageChannel.sendMessage(
+			new ReplyFromCallback(message.replyTo, new NanoBufReader(result.bytes())),
+		)
+	}
 }
 
 function createApplication(config: ApplicationConfig): ApplicationContext {

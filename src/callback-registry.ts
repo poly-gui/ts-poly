@@ -1,7 +1,7 @@
-import { NanoBufReader } from "nanopack"
+import type { NanoBufReader, NanoPackMessage } from "nanopack"
 
 type CallbackHandle = number
-type Callback = (argBytes: NanoBufReader) => void
+type Callback = (argBytes: NanoBufReader) => NanoPackMessage | null | void
 
 class CallbackRegistry {
 	static KEY = "Poly.CallbackRegistry"
@@ -38,11 +38,12 @@ class CallbackRegistry {
 		return this.cbHandleMap.get(callback) ?? null
 	}
 
-	public invokeCallback(handle: CallbackHandle, argBytes: NanoBufReader) {
+	public invokeCallback(handle: CallbackHandle, argBytes: NanoBufReader): NanoPackMessage | null | void {
 		const cb = this.cbMap.get(handle)
 		if (cb) {
-			cb(argBytes)
+			return cb(argBytes)
 		}
+		return null
 	}
 
 	public removeCallbacksOwnedBy(owner: string) {
