@@ -2,21 +2,21 @@
 
 import { NanoBufReader, type NanoPackMessage } from "nanopack"
 
-import { InvokeCallback } from "./messages/invoke-callback.np.js"
 import { CreateWindow } from "./windowing/create-window.np.js"
 import { ReplyFromCallback } from "./messages/reply-from-callback.np.js"
+import { InvokeCallback } from "./messages/invoke-callback.np.js"
 
 function makeNanoPackMessage(
 	bytes: Uint8Array,
 ): { bytesRead: number; result: NanoPackMessage } | null {
 	const reader = new NanoBufReader(bytes)
 	switch (reader.readTypeId()) {
-		case 2:
-			return InvokeCallback.fromReader(reader)
 		case 10:
 			return CreateWindow.fromReader(reader)
-		case 4:
+		case 5:
 			return ReplyFromCallback.fromReader(reader)
+		case 2:
+			return InvokeCallback.fromReader(reader)
 		default:
 			return null
 	}
