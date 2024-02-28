@@ -3,7 +3,7 @@
 import { NanoBufReader, NanoBufWriter, type NanoPackMessage } from "nanopack"
 
 class InvokeCallback implements NanoPackMessage {
-	public static TYPE_ID = 2
+	public static TYPE_ID = 2013877267
 
 	constructor(
 		public handle: number,
@@ -42,12 +42,12 @@ class InvokeCallback implements NanoPackMessage {
 	}
 
 	public get typeId(): number {
-		return 2
+		return 2013877267
 	}
 
 	public bytes(): Uint8Array {
 		const writer = new NanoBufWriter(16)
-		writer.writeTypeId(2)
+		writer.writeTypeId(2013877267)
 
 		writer.appendInt32(this.handle)
 		writer.writeFieldSize(0, 4)
@@ -67,7 +67,7 @@ class InvokeCallback implements NanoPackMessage {
 
 	public bytesWithLengthPrefix(): Uint8Array {
 		const writer = new NanoBufWriter(16 + 4, true)
-		writer.writeTypeId(2)
+		writer.writeTypeId(2013877267)
 
 		writer.appendInt32(this.handle)
 		writer.writeFieldSize(0, 4)

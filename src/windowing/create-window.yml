@@ -1,5 +1,4 @@
 CreateWindow:
-  typeid: 10
   title: string
   description: string
   width: int32
