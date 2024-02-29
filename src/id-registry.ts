@@ -1,33 +1,22 @@
 class IdRegistry {
 	static KEY = "Poly.IdRegistry"
 
-	private ids = new Map<string, Set<number>>()
+	private ids = new Set<number>()
 
-	public newId(type: string): number {
-		const existingIds = this.ids.get(type)
-		if (existingIds) {
-			let id: number
-			do {
-				id = this.randomId()
-			} while (existingIds.has(id))
-			existingIds.add(id)
-			return id
-		}
-
-		const id = this.randomId()
-		const ids = new Set<number>()
-		ids.add(id)
-		this.ids.set(type, ids)
+	public newId(): number {
+		let id: number
+		do {
+			id = this.randomId()
+		} while (this.ids.has(id))
 		return id
 	}
 
-	public forgetId(type: string, id: number) {
-		const existingIds = this.ids.get(type)
-		existingIds?.delete(id)
+	public forgetId(id: number) {
+		this.ids.delete(id)
 	}
 
-	public isIdRegistered(id: number, type: string): boolean {
-		return this.ids.get(type)?.has(id) ?? false
+	public isIdRegistered(id: number): boolean {
+		return this.ids.has(id)
 	}
 
 	private randomId() {
