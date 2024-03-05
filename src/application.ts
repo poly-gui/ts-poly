@@ -1,11 +1,8 @@
 import { MessageChannel } from "./bridge/message-channel.js"
 import { CallbackRegistry } from "./callback-registry.js"
 import { MessageHandlerRegistry } from "./message-handler-registry.js"
-import { NanoBufReader, NanoPackMessage } from "nanopack"
-import { makeNanoPackMessage } from "./message-factory.np.js"
-import { InvokeCallback } from "./messages/invoke-callback.np.js"
 import { IdRegistry } from "./id-registry.js"
-import { ReplyFromCallback } from "./messages/reply-from-callback.np.js"
+import { NativeLayer } from "./native-layer.js"
 
 interface ApplicationConfig {
 	messageChannel: MessageChannel
@@ -13,6 +10,7 @@ interface ApplicationConfig {
 
 interface ApplicationContext {
 	messageChannel: MessageChannel
+	nativeLayer: NativeLayer
 	registries: Map<string, unknown>
 
 	messageHandlers: MessageHandlerRegistry
@@ -24,41 +22,16 @@ interface ApplicationContext {
 	getRegistry<TReg>(key: string): TReg | null
 }
 
-async function handleMessage(
-	message: NanoPackMessage,
-	context: ApplicationContext,
-) {
-	switch (message.typeId) {
-		case InvokeCallback.TYPE_ID:
-			await invokeCallback(message as unknown as InvokeCallback, context)
-			break
-	}
-}
-
-async function invokeCallback(
-	message: InvokeCallback,
-	context: ApplicationContext,
-) {
-	const result = context.callbackRegistry.invokeCallback(
-		message.handle,
-		message.args,
-	)
-	if (result && message.replyTo) {
-		await context.messageChannel.sendMessage(
-			new ReplyFromCallback(message.replyTo, new NanoBufReader(result.bytes())),
-		)
-	}
-}
-
 function createApplication(config: ApplicationConfig): ApplicationContext {
 	const registries = new Map()
 	registries.set(CallbackRegistry.KEY, new CallbackRegistry())
 	registries.set(IdRegistry.KEY, new IdRegistry())
 	registries.set(MessageHandlerRegistry.KEY, new MessageHandlerRegistry())
 
-	return {
+	const context = {
 		registries,
 		messageChannel: config.messageChannel,
+		nativeLayer: new NativeLayer(),
 
 		get messageHandlers(): MessageHandlerRegistry {
 			return this.getRegistry<MessageHandlerRegistry>(
@@ -82,15 +55,13 @@ function createApplication(config: ApplicationConfig): ApplicationContext {
 			return (this.registries.get(key) as TReg) ?? null
 		},
 	}
+	context.nativeLayer.context = context
+
+	return context
 }
 
 async function runApplication(context: ApplicationContext) {
-	for await (const messageBytes of context.messageChannel.incomingMessageBytes()) {
-		const maybeMessage = makeNanoPackMessage(messageBytes)
-		if (maybeMessage) {
-			await handleMessage(maybeMessage.result, context)
-		}
-	}
+	await context.nativeLayer.open()
 }
 
 export type { ApplicationContext }
