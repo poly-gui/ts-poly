@@ -17,7 +17,7 @@ async function createWindow(config: WindowConfig, context: ApplicationContext) {
 		config.height,
 		config.tag,
 	)
-	await context.messageChannel.sendMessage(createWindowMessage)
+	await context.nativeLayer.sendMessage(createWindowMessage)
 }
 
 export type { WindowConfig }
