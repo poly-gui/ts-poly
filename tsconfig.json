@@ -10,10 +10,6 @@
     "strict": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "allowJs": true,
-    "types": [
-      "bun-types"
-      // add Bun global
-    ]
+    "allowJs": true
   }
 }

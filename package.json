@@ -2,6 +2,10 @@
   "name": "poly",
   "type": "module",
   "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
     "./application": {
       "import": "./dist/application.js",
       "types": "./dist/application.d.ts"
