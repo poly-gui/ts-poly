@@ -20,7 +20,7 @@ class StdioChannel implements Channel {
 	}
 
 	async sendRequest(request: Request) {
-		const writer = new NanoBufWriter(request.body.headerSize)
+		const writer = new NanoBufWriter(request.body.headerSize + 8)
 		writer.writeUint32LE(request.id, 0)
 		const bodySize = request.body.writeTo(writer, 8)
 		writer.writeUint32LE(bodySize, 4)
