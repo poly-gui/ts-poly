@@ -24,6 +24,7 @@ class StdioChannel implements Channel {
 		writer.writeUint32LE(request.id, 0)
 		const bodySize = request.body.writeTo(writer, 8)
 		writer.writeUint32LE(bodySize, 4)
+		await this.stdio.stdout(writer.bytes)
 	}
 
 	async sendAck(requestId: number) {

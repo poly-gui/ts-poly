@@ -9,7 +9,6 @@
     "moduleDetection": "force",
     "strict": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "allowJs": true
+    "forceConsistentCasingInFileNames": true
   }
 }
