@@ -1,15 +1,15 @@
-import { MessageChannel } from "./bridge/message-channel.js"
+import { Channel } from "./bridge/channel.js"
 import { CallbackRegistry } from "./callback-registry.js"
 import { MessageHandlerRegistry } from "./message-handler-registry.js"
 import { IdRegistry } from "./id-registry.js"
 import { NativeLayer } from "./native-layer.js"
 
 interface ApplicationConfig {
-	messageChannel: MessageChannel
+	messageChannel: Channel
 }
 
 interface ApplicationContext {
-	messageChannel: MessageChannel
+	messageChannel: Channel
 	nativeLayer: NativeLayer
 	registries: Map<string, unknown>
 

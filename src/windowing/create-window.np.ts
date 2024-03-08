@@ -5,6 +5,10 @@ import { NanoBufReader, NanoBufWriter, type NanoPackMessage } from "nanopack"
 class CreateWindow implements NanoPackMessage {
 	public static TYPE_ID = 3533765426
 
+	public readonly typeId: number = 3533765426
+
+	public readonly headerSize: number = 24
+
 	constructor(
 		public title: string,
 		public description: string,
@@ -49,53 +53,32 @@ class CreateWindow implements NanoPackMessage {
 		}
 	}
 
-	public get typeId(): number {
-		return 3533765426
+	public writeTo(writer: NanoBufWriter, offset: number = 0): number {
+		const writerSizeBefore = writer.currentSize
+
+		writer.writeTypeId(3533765426, offset)
+
+		const titleByteLength = writer.appendString(this.title)
+		writer.writeFieldSize(0, titleByteLength, offset)
+
+		const descriptionByteLength = writer.appendString(this.description)
+		writer.writeFieldSize(1, descriptionByteLength, offset)
+
+		writer.appendInt32(this.width)
+		writer.writeFieldSize(2, 4, offset)
+
+		writer.appendInt32(this.height)
+		writer.writeFieldSize(3, 4, offset)
+
+		const tagByteLength = writer.appendString(this.tag)
+		writer.writeFieldSize(4, tagByteLength, offset)
+
+		return writer.currentSize - writerSizeBefore
 	}
 
 	public bytes(): Uint8Array {
 		const writer = new NanoBufWriter(24)
-		writer.writeTypeId(3533765426)
-
-		const titleByteLength = writer.appendString(this.title)
-		writer.writeFieldSize(0, titleByteLength)
-
-		const descriptionByteLength = writer.appendString(this.description)
-		writer.writeFieldSize(1, descriptionByteLength)
-
-		writer.appendInt32(this.width)
-		writer.writeFieldSize(2, 4)
-
-		writer.appendInt32(this.height)
-		writer.writeFieldSize(3, 4)
-
-		const tagByteLength = writer.appendString(this.tag)
-		writer.writeFieldSize(4, tagByteLength)
-
-		return writer.bytes
-	}
-
-	public bytesWithLengthPrefix(): Uint8Array {
-		const writer = new NanoBufWriter(24 + 4, true)
-		writer.writeTypeId(3533765426)
-
-		const titleByteLength = writer.appendString(this.title)
-		writer.writeFieldSize(0, titleByteLength)
-
-		const descriptionByteLength = writer.appendString(this.description)
-		writer.writeFieldSize(1, descriptionByteLength)
-
-		writer.appendInt32(this.width)
-		writer.writeFieldSize(2, 4)
-
-		writer.appendInt32(this.height)
-		writer.writeFieldSize(3, 4)
-
-		const tagByteLength = writer.appendString(this.tag)
-		writer.writeFieldSize(4, tagByteLength)
-
-		writer.writeLengthPrefix(writer.currentSize - 4)
-
+		this.writeTo(writer)
 		return writer.bytes
 	}
 }

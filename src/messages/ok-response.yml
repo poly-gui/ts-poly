@@ -1,3 +1,0 @@
-OkResponse:
-  request_id: uint32
-  body: any?

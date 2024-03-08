@@ -5,6 +5,10 @@ import { NanoBufReader, NanoBufWriter, type NanoPackMessage } from "nanopack"
 class InvokeCallback implements NanoPackMessage {
 	public static TYPE_ID = 2013877267
 
+	public readonly typeId: number = 2013877267
+
+	public readonly headerSize: number = 16
+
 	constructor(
 		public handle: number,
 		public args: NanoBufReader,
@@ -41,49 +45,30 @@ class InvokeCallback implements NanoPackMessage {
 		return { bytesRead: ptr, result: new InvokeCallback(handle, args, replyTo) }
 	}
 
-	public get typeId(): number {
-		return 2013877267
+	public writeTo(writer: NanoBufWriter, offset: number = 0): number {
+		const writerSizeBefore = writer.currentSize
+
+		writer.writeTypeId(2013877267, offset)
+
+		writer.appendInt32(this.handle)
+		writer.writeFieldSize(0, 4, offset)
+
+		writer.writeFieldSize(1, this.args.bytes.byteLength, offset)
+		writer.appendBytes(this.args.bytes)
+
+		if (this.replyTo) {
+			writer.appendInt32(this.replyTo)
+			writer.writeFieldSize(2, 4, offset)
+		} else {
+			writer.writeFieldSize(2, -1, offset)
+		}
+
+		return writer.currentSize - writerSizeBefore
 	}
 
 	public bytes(): Uint8Array {
 		const writer = new NanoBufWriter(16)
-		writer.writeTypeId(2013877267)
-
-		writer.appendInt32(this.handle)
-		writer.writeFieldSize(0, 4)
-
-		writer.writeFieldSize(1, this.args.bytes.byteLength)
-		writer.appendBytes(this.args.bytes)
-
-		if (this.replyTo) {
-			writer.appendInt32(this.replyTo)
-			writer.writeFieldSize(2, 4)
-		} else {
-			writer.writeFieldSize(2, -1)
-		}
-
-		return writer.bytes
-	}
-
-	public bytesWithLengthPrefix(): Uint8Array {
-		const writer = new NanoBufWriter(16 + 4, true)
-		writer.writeTypeId(2013877267)
-
-		writer.appendInt32(this.handle)
-		writer.writeFieldSize(0, 4)
-
-		writer.writeFieldSize(1, this.args.bytes.byteLength)
-		writer.appendBytes(this.args.bytes)
-
-		if (this.replyTo) {
-			writer.appendInt32(this.replyTo)
-			writer.writeFieldSize(2, 4)
-		} else {
-			writer.writeFieldSize(2, -1)
-		}
-
-		writer.writeLengthPrefix(writer.currentSize - 4)
-
+		this.writeTo(writer)
 		return writer.bytes
 	}
 }

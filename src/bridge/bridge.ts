@@ -1,2 +1,2 @@
-export * from "./message-channel.js"
-export * from "./stdio-message-channel.js"
+export * from "./channel.js"
+export * from "./stdio-channel.js"

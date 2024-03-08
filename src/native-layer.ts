@@ -1,10 +1,13 @@
 import { NanoBufReader, NanoPackMessage } from "nanopack"
-import { makeNanoPackMessage } from "./message-factory.np.js"
 import { ApplicationContext } from "./application.js"
 import { InvokeCallback } from "./messages/invoke-callback.np.js"
 import { ReplyFromCallback } from "./messages/reply-from-callback.np.js"
-import { Request } from "./messages/request.np.js"
-import { OkResponse } from "./messages/ok-response.np.js"
+import {
+	type Packet,
+	type Request,
+	PACKET_TYPE_ACK,
+	PACKET_TYPE_REQUEST,
+} from "./bridge/channel-packet.js"
 
 type PromiseResolver = () => void
 
@@ -16,18 +19,18 @@ class NativeLayer {
 	constructor() {}
 
 	async open() {
-		for await (const messageBytes of this.context.messageChannel.incomingMessageBytes()) {
-			const maybeMessage = makeNanoPackMessage(messageBytes)
-			if (maybeMessage) {
-				this.handleMessage(maybeMessage.result)
-			}
+		for await (const packet of this.context.messageChannel.incomingPackets()) {
+			this.handlePacket(packet)
 		}
 	}
 
 	async sendMessage(message: NanoPackMessage) {
-		const requestBody = new NanoBufReader(message.bytes())
-		const request = new Request(this.randomRequestId(), requestBody)
-		await this.context.messageChannel.sendMessage(request)
+		const request: Request = {
+			type: PACKET_TYPE_REQUEST,
+			id: this.randomRequestId(),
+			body: message,
+		}
+		await this.context.messageChannel.sendRequest(request)
 		return new Promise<void>((resolve) => {
 			this.pendingRequests.set(request.id, resolve)
 		})
@@ -36,19 +39,30 @@ class NativeLayer {
 	private randomRequestId(): number {
 		let id: number
 		do {
-			id = Math.floor(Math.random() * 4294967295)
+			id = Math.floor(Math.random() * 4294967294) + 1
 		} while (this.pendingRequests.has(id))
 		return id
 	}
 
-	private handleMessage(message: NanoPackMessage) {
-		switch (message.typeId) {
-			case InvokeCallback.TYPE_ID:
-				this.invokeCallback(message as unknown as InvokeCallback)
+	private async handlePacket(packet: Packet) {
+		switch (packet.type) {
+			case PACKET_TYPE_REQUEST:
+				await this.handleMessage(packet.body)
 				break
 
-			case OkResponse.TYPE_ID:
-				this.resolveRequest((message as unknown as OkResponse).requestId)
+			case PACKET_TYPE_ACK:
+				this.resolveRequest(packet.requestId)
+				break
+		}
+	}
+
+	private async handleMessage(message: NanoPackMessage) {
+		switch (message.typeId) {
+			case InvokeCallback.TYPE_ID:
+				await this.invokeCallback(message as unknown as InvokeCallback)
+				break
+
+			default:
 				break
 		}
 	}

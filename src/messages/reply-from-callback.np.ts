@@ -5,6 +5,10 @@ import { NanoBufReader, NanoBufWriter, type NanoPackMessage } from "nanopack"
 class ReplyFromCallback implements NanoPackMessage {
 	public static TYPE_ID = 370365707
 
+	public readonly typeId: number = 370365707
+
+	public readonly headerSize: number = 12
+
 	constructor(
 		public to: number,
 		public args: NanoBufReader,
@@ -32,35 +36,23 @@ class ReplyFromCallback implements NanoPackMessage {
 		return { bytesRead: ptr, result: new ReplyFromCallback(to, args) }
 	}
 
-	public get typeId(): number {
-		return 370365707
+	public writeTo(writer: NanoBufWriter, offset: number = 0): number {
+		const writerSizeBefore = writer.currentSize
+
+		writer.writeTypeId(370365707, offset)
+
+		writer.appendInt32(this.to)
+		writer.writeFieldSize(0, 4, offset)
+
+		writer.writeFieldSize(1, this.args.bytes.byteLength, offset)
+		writer.appendBytes(this.args.bytes)
+
+		return writer.currentSize - writerSizeBefore
 	}
 
 	public bytes(): Uint8Array {
 		const writer = new NanoBufWriter(12)
-		writer.writeTypeId(370365707)
-
-		writer.appendInt32(this.to)
-		writer.writeFieldSize(0, 4)
-
-		writer.writeFieldSize(1, this.args.bytes.byteLength)
-		writer.appendBytes(this.args.bytes)
-
-		return writer.bytes
-	}
-
-	public bytesWithLengthPrefix(): Uint8Array {
-		const writer = new NanoBufWriter(12 + 4, true)
-		writer.writeTypeId(370365707)
-
-		writer.appendInt32(this.to)
-		writer.writeFieldSize(0, 4)
-
-		writer.writeFieldSize(1, this.args.bytes.byteLength)
-		writer.appendBytes(this.args.bytes)
-
-		writer.writeLengthPrefix(writer.currentSize - 4)
-
+		this.writeTo(writer)
 		return writer.bytes
 	}
 }
