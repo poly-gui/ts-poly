@@ -54,26 +54,31 @@ class CreateWindow implements NanoPackMessage {
 	}
 
 	public writeTo(writer: NanoBufWriter, offset: number = 0): number {
-		const writerSizeBefore = writer.currentSize
+		let bytesWritten = 24
 
 		writer.writeTypeId(3533765426, offset)
 
 		const titleByteLength = writer.appendString(this.title)
 		writer.writeFieldSize(0, titleByteLength, offset)
+		bytesWritten += titleByteLength
 
 		const descriptionByteLength = writer.appendString(this.description)
 		writer.writeFieldSize(1, descriptionByteLength, offset)
+		bytesWritten += descriptionByteLength
 
 		writer.appendInt32(this.width)
 		writer.writeFieldSize(2, 4, offset)
+		bytesWritten += 4
 
 		writer.appendInt32(this.height)
 		writer.writeFieldSize(3, 4, offset)
+		bytesWritten += 4
 
 		const tagByteLength = writer.appendString(this.tag)
 		writer.writeFieldSize(4, tagByteLength, offset)
+		bytesWritten += tagByteLength
 
-		return writer.currentSize - writerSizeBefore
+		return bytesWritten
 	}
 
 	public bytes(): Uint8Array {

@@ -46,24 +46,27 @@ class InvokeCallback implements NanoPackMessage {
 	}
 
 	public writeTo(writer: NanoBufWriter, offset: number = 0): number {
-		const writerSizeBefore = writer.currentSize
+		let bytesWritten = 16
 
 		writer.writeTypeId(2013877267, offset)
 
 		writer.appendInt32(this.handle)
 		writer.writeFieldSize(0, 4, offset)
+		bytesWritten += 4
 
 		writer.writeFieldSize(1, this.args.bytes.byteLength, offset)
 		writer.appendBytes(this.args.bytes)
+		bytesWritten += this.args.bytes.byteLength
 
 		if (this.replyTo) {
 			writer.appendInt32(this.replyTo)
 			writer.writeFieldSize(2, 4, offset)
+			bytesWritten += 4
 		} else {
 			writer.writeFieldSize(2, -1, offset)
 		}
 
-		return writer.currentSize - writerSizeBefore
+		return bytesWritten
 	}
 
 	public bytes(): Uint8Array {

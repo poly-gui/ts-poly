@@ -37,17 +37,19 @@ class ReplyFromCallback implements NanoPackMessage {
 	}
 
 	public writeTo(writer: NanoBufWriter, offset: number = 0): number {
-		const writerSizeBefore = writer.currentSize
+		let bytesWritten = 12
 
 		writer.writeTypeId(370365707, offset)
 
 		writer.appendInt32(this.to)
 		writer.writeFieldSize(0, 4, offset)
+		bytesWritten += 4
 
 		writer.writeFieldSize(1, this.args.bytes.byteLength, offset)
 		writer.appendBytes(this.args.bytes)
+		bytesWritten += this.args.bytes.byteLength
 
-		return writer.currentSize - writerSizeBefore
+		return bytesWritten
 	}
 
 	public bytes(): Uint8Array {
