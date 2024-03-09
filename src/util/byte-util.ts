@@ -4,7 +4,7 @@ function readUint32LE(offset: number, array: Uint8Array) {
 	size |= array[offset + 1] << 8
 	size |= array[offset + 2] << 16
 	size |= array[offset + 3] << 24
-	return size
+	return size >>> 0
 }
 
 function writeUint32LE(uint32: number, offset: number, array: Uint8Array) {
