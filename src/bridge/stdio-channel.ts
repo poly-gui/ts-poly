@@ -12,10 +12,14 @@ import { makeNanoPackMessage } from "../message-factory.np.js"
 
 class StdioChannel implements Channel {
 	async *incomingPackets(): AsyncGenerator<Packet> {
-		let chunk: Buffer
-		while ((chunk = stdin.read(8)) !== null) {
-			const requestId = readUint32LE(0, chunk)
-			const size = readUint32LE(4, chunk)
+		while (true) {
+			await new Promise((resolve) => setTimeout(resolve, 1000 / 144))
+
+			const reqHeader = stdin.read(8)
+			if (reqHeader === null) continue
+
+			const requestId = readUint32LE(0, reqHeader)
+			const size = readUint32LE(4, reqHeader)
 
 			if (size === 0) {
 				yield { requestId, type: PACKET_TYPE_ACK }
