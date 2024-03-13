@@ -1,21 +1,37 @@
-import { Channel } from "./channel.js"
 import { NanoBufWriter } from "nanopack"
-import { Packet, Request, packetFromBytes } from "./channel-packet.js"
-import { writeUint32LE } from "../util/byte-util.js"
-
-interface StdIo {
-	stdin(): AsyncGenerator<Uint8Array>
-
-	stdout(data: Uint8Array): Promise<void>
-}
+import { stdout, stdin } from "node:process"
+import { Channel } from "./channel.js"
+import {
+	Packet,
+	Request,
+	PACKET_TYPE_ACK,
+	PACKET_TYPE_REQUEST,
+} from "./channel-packet.js"
+import { readUint32LE, writeUint32LE } from "../util/byte-util.js"
+import { makeNanoPackMessage } from "../message-factory.np.js"
 
 class StdioChannel implements Channel {
-	constructor(private stdio: StdIo) {}
-
 	async *incomingPackets(): AsyncGenerator<Packet> {
-		for await (const chunk of this.stdio.stdin()) {
-			const packet = packetFromBytes(chunk)
-			if (packet) yield packet
+		let chunk: Buffer
+		while ((chunk = stdin.read(8)) !== null) {
+			const requestId = readUint32LE(0, chunk)
+			const size = readUint32LE(4, chunk)
+
+			if (size === 0) {
+				yield { requestId, type: PACKET_TYPE_ACK }
+			}
+
+			const msgBytes = stdin.read(size)
+			if (msgBytes === null) continue
+
+			const parsed = makeNanoPackMessage(msgBytes)
+			if (!parsed) continue
+
+			return {
+				type: PACKET_TYPE_REQUEST,
+				id: requestId,
+				body: parsed.result,
+			}
 		}
 	}
 
@@ -24,16 +40,15 @@ class StdioChannel implements Channel {
 		writer.writeUint32LE(request.id, 0)
 		const bodySize = request.body.writeTo(writer, 8)
 		writer.writeUint32LE(bodySize, 4)
-		await this.stdio.stdout(writer.bytes)
+		stdout.write(writer.bytes)
 	}
 
 	async sendAck(requestId: number) {
 		const bytes = new Uint8Array(8)
 		writeUint32LE(requestId, 0, bytes)
 		writeUint32LE(0, 0, bytes)
-		await this.stdio.stdout(bytes)
+		stdout.write(bytes)
 	}
 }
 
-export type { StdIo }
 export { StdioChannel }
