@@ -1,6 +1,4 @@
 class IdRegistry {
-	static KEY = "Poly.IdRegistry"
-
 	private ids = new Set<number>()
 
 	public newId(): number {

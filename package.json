@@ -1,46 +1,43 @@
 {
-  "name": "poly",
-  "type": "module",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    },
-    "./application": {
-      "import": "./dist/application.js",
-      "types": "./dist/application.d.ts"
-    },
-    "./bridge": {
-      "import": "./dist/bridge/bridge.js",
-      "types": "./dist/bridge/bridge.d.ts"
-    },
-    "./window": {
-      "import": "./dist/windowing/create-window.js",
-      "types": "./dist/windowing/create-window.d.ts"
-    }
-  },
-  "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "nanoc": "nanoc --language=ts --factory-out=src $(find src -name \"*.yml\")",
-    "prepare": "tsc -p tsconfig.build.json"
-  },
-  "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "latest",
-    "@typescript-eslint/parser": "latest",
-    "bun-types": "latest",
-    "eslint": "^8.56.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-only-warn": "^1.1.0",
-    "eslint-plugin-prettier": "^5.0.1",
-    "prettier": "^3.1.1"
-  },
-  "dependencies": {
-    "nanopack": "github:poly-gui/ts-nanopack#main"
-  },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
-  },
-  "trustedDependencies": [
-    "nanopack"
-  ]
+	"name": "poly",
+	"type": "module",
+	"files": ["dist", "LICENSE", "README.md", "package.json"],
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		},
+		"./application": {
+			"import": "./dist/application.js",
+			"types": "./dist/application.d.ts"
+		},
+		"./bridge": {
+			"import": "./dist/bridge/bridge.js",
+			"types": "./dist/bridge/bridge.d.ts"
+		},
+		"./window": {
+			"import": "./dist/windowing/create-window.js",
+			"types": "./dist/windowing/create-window.d.ts"
+		},
+		"./widget": {
+			"import": "./dist/widget/index.js",
+			"types": "./dist/widget/index.d.ts"
+		}
+	},
+	"scripts": {
+		"build": "tsc -p tsconfig.build.json",
+		"nanoc": "nanoc --language=ts --basedir=rpc-schemas --factory-out=. --outdir=src/rpc",
+		"prepare": "tsc -p tsconfig.build.json"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.8.3",
+		"bun-types": "latest"
+	},
+	"dependencies": {
+		"nanopack": "github:poly-gui/ts-nanopack#main"
+	},
+	"peerDependencies": {
+		"typescript": "^5.0.0"
+	},
+	"trustedDependencies": ["nanopack"]
 }

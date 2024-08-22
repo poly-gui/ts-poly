@@ -1,4 +1,0 @@
-InvokeCallback:
-  handle: int32
-  args: any
-  replyTo: int32?

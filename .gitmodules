@@ -1,0 +1,3 @@
+[submodule "rpc-schemas"]
+	path = rpc-schemas
+	url = https://github.com/poly-gui/rpc-schemas

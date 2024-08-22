@@ -1,69 +1,68 @@
-import { Channel } from "./bridge/channel.js"
 import { CallbackRegistry } from "./callback-registry.js"
-import { MessageHandlerRegistry } from "./message-handler-registry.js"
+import {
+	PortableLayerServiceServer,
+	type IPortableLayerService,
+} from "./rpc/portable-layer-service.np.js"
+import {
+	NodeStandardIoRpcChannel,
+	type RpcClientChannel,
+	type RpcServerChannel,
+} from "nanopack/rpc"
+import { NativeLayerServiceClient } from "./rpc/native-layer-service.np.js"
 import { IdRegistry } from "./id-registry.js"
-import { NativeLayer } from "./native-layer.js"
+import { WindowManager, type WindowManagerDelegate } from "./window.js"
+
+type PolyApplicationTransport = { type: "node-stdio" }
 
 interface ApplicationConfig {
-	messageChannel: Channel
+	transport: PolyApplicationTransport
 }
 
-interface ApplicationContext {
-	messageChannel: Channel
-	nativeLayer: NativeLayer
-	registries: Map<string, unknown>
+type PolyApplicationRunLoop = Promise<void>
 
-	messageHandlers: MessageHandlerRegistry
-	callbackRegistry: CallbackRegistry
-	idRegistry: IdRegistry
+class PolyApplication {
+	public readonly nativeLayer: NativeLayerServiceClient
+	public readonly callbackRegistry = new CallbackRegistry()
+	public readonly idRegistry = new IdRegistry()
 
-	addRegistry<TReg>(key: string, registry: TReg): void
+	private rpcChannel: NodeStandardIoRpcChannel
+	private rpcServer: PortableLayerServiceServer
 
-	getRegistry<TReg>(key: string): TReg | null
-}
-
-function createApplication(config: ApplicationConfig): ApplicationContext {
-	const registries = new Map()
-	registries.set(CallbackRegistry.KEY, new CallbackRegistry())
-	registries.set(IdRegistry.KEY, new IdRegistry())
-	registries.set(MessageHandlerRegistry.KEY, new MessageHandlerRegistry())
-
-	const context = {
-		registries,
-		messageChannel: config.messageChannel,
-		nativeLayer: new NativeLayer(),
-
-		get messageHandlers(): MessageHandlerRegistry {
-			return this.getRegistry<MessageHandlerRegistry>(
-				MessageHandlerRegistry.KEY,
-			)!
+	private portableLayerService: IPortableLayerService = {
+		invokeCallback: (handle, args) => {
+			// biome-ignore lint/style/noNonNullAssertion: <TODO: throw error when callback doesnt return value>
+			return this.callbackRegistry.invokeCallback(handle, args)!
 		},
-
-		get callbackRegistry(): CallbackRegistry {
-			return this.getRegistry<CallbackRegistry>(CallbackRegistry.KEY)!
-		},
-
-		get idRegistry(): IdRegistry {
-			return this.getRegistry<IdRegistry>(IdRegistry.KEY)!
-		},
-
-		addRegistry<TReg>(key: string, registry: TReg) {
-			this.registries.set(key, registry)
-		},
-
-		getRegistry<TReg>(key: string): TReg | null {
-			return (this.registries.get(key) as TReg) ?? null
+		invokeVoidCallback: (handle, args) => {
+			this.callbackRegistry.invokeVoidCallback(handle, args)
 		},
 	}
-	context.nativeLayer.context = context
 
-	return context
+	private windowManagerDelegate: WindowManagerDelegate = {
+		createWindow: (config) => {
+			this.nativeLayer.createWindow(
+				config.title,
+				"",
+				config.width,
+				config.height,
+				config.tag,
+			)
+		},
+	}
+	public readonly windowManager = new WindowManager(this.windowManagerDelegate)
+
+	public constructor(private config: ApplicationConfig) {
+		this.rpcChannel = new NodeStandardIoRpcChannel()
+		this.rpcServer = new PortableLayerServiceServer(
+			this.rpcChannel,
+			this.portableLayerService,
+		)
+		this.nativeLayer = new NativeLayerServiceClient(this.rpcChannel)
+	}
+
+	public start(): PolyApplicationRunLoop {
+		return this.rpcChannel.open()
+	}
 }
 
-async function runApplication(context: ApplicationContext) {
-	await context.nativeLayer.open()
-}
-
-export type { ApplicationContext }
-export type { IdRegistry }
-export { createApplication, runApplication }
+export { PolyApplication }

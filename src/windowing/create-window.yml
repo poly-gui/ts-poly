@@ -1,6 +1,0 @@
-CreateWindow:
-  title: string
-  description: string
-  width: int32
-  height: int32
-  tag: string

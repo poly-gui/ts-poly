@@ -1,36 +1,26 @@
-import type { NanoBufReader, NanoPackMessage } from "nanopack"
+import type { NanoPackMessage } from "nanopack"
 
 type CallbackHandle = number
-type Callback = (argBytes: NanoBufReader) => NanoPackMessage | null | void
+type Callback = (arg: NanoPackMessage) => NanoPackMessage | null
+type VoidCallback = (arg: NanoPackMessage) => void
 
 class CallbackRegistry {
-	static KEY = "Poly.CallbackRegistry"
-
-	private owners: Map<string, Set<CallbackHandle>> = new Map()
-	private cbMap: Map<CallbackHandle, Callback> = new Map()
+	private cbMap: Map<CallbackHandle, Callback | VoidCallback> = new Map()
 	private cbHandleMap: Map<Callback, CallbackHandle> = new Map()
 
-	constructor() {}
-
-	public newCallback(cb: Callback, owner?: string): CallbackHandle {
+	public newCallback(cb: Callback): CallbackHandle {
 		const handle = this.newCallbackHandle()
-
 		this.cbMap.set(handle, cb)
-		this.cbHandleMap.set(cb, handle)
-
-		if (owner) {
-			let owned = this.owners.get(owner)
-			if (!owned) {
-				owned = new Set()
-				this.owners.set(owner, owned)
-			}
-			owned.add(handle)
-		}
-
 		return handle
 	}
 
-	public findCallback(handle: CallbackHandle): Callback | null {
+	public newVoidCallback(cb: VoidCallback): CallbackHandle {
+		const handle = this.newCallbackHandle()
+		this.cbMap.set(handle, cb)
+		return handle
+	}
+
+	public findCallback(handle: CallbackHandle): Callback | VoidCallback | null {
 		return this.cbMap.get(handle) ?? null
 	}
 
@@ -38,23 +28,23 @@ class CallbackRegistry {
 		return this.cbHandleMap.get(callback) ?? null
 	}
 
-	public invokeCallback(handle: CallbackHandle, argBytes: NanoBufReader): NanoPackMessage | null | void {
+	public invokeCallback(
+		handle: CallbackHandle,
+		args: NanoPackMessage,
+	): NanoPackMessage | null {
 		const cb = this.cbMap.get(handle)
 		if (cb) {
-			return cb(argBytes)
+			return cb(args) ?? null
 		}
 		return null
 	}
 
-	public removeCallbacksOwnedBy(owner: string) {
-		this.owners.get(owner)?.forEach((handle) => {
-			this.cbMap.delete(handle)
-		})
-		this.owners.delete(owner)
+	public invokeVoidCallback(handle: CallbackHandle, args: NanoPackMessage) {
+		this.cbMap.get(handle)?.(args)
 	}
 
 	private newCallbackHandle(): CallbackHandle {
-		return Math.floor(Math.random() * 2147483648)
+		return Math.floor(Math.random() * 4294967295)
 	}
 }
 
