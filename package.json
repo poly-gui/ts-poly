@@ -22,6 +22,10 @@
 		"./widget": {
 			"import": "./dist/widget/index.js",
 			"types": "./dist/widget/index.d.ts"
+		},
+		"./rpc": {
+			"import": "./dist/rpc.js",
+			"types": "./dist/rpc.d.ts"
 		}
 	},
 	"scripts": {

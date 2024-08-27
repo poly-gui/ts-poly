@@ -34,7 +34,7 @@ class Center extends Widget {
 
     let tag: number | null;
     if (reader.readFieldSize(0, offset) >= 0) {
-      tag = reader.readInt32(ptr);
+      tag = reader.readUint32(ptr);
       ptr += 4;
     } else {
       tag = null;
@@ -56,7 +56,7 @@ class Center extends Widget {
     writer.writeTypeId(1855640887, offset);
 
     if (this.tag) {
-      writer.appendInt32(this.tag);
+      writer.appendUint32(this.tag);
       writer.writeFieldSize(0, 4, offset);
       bytesWritten += 4;
     } else {

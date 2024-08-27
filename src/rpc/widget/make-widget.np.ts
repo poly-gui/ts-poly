@@ -9,6 +9,7 @@ import { Row } from "./row.np.js";
 import { Center } from "./center.np.js";
 import { ListView } from "./list-view.np.js";
 import { Column } from "./column.np.js";
+import { Slider } from "./slider.np.js";
 import { Text } from "./text.np.js";
 
 function makeWidget(
@@ -30,6 +31,8 @@ function makeWidget(
       return ListView.fromReader(reader, offset);
     case 2415007766:
       return Column.fromReader(reader, offset);
+    case 3373588321:
+      return Slider.fromReader(reader, offset);
     case 3495336243:
       return Text.fromReader(reader, offset);
     default:

@@ -6,6 +6,7 @@ import { Button } from "./widget/button.np.js";
 import { ClickEvent } from "./event/click-event.np.js";
 import { TextField } from "./widget/text-field.np.js";
 import { Row } from "./widget/row.np.js";
+import { SliderValueChangedEvent } from "./widget/slider-value-changed-event.np.js";
 import { ListViewItem } from "./widget/list-view-item.np.js";
 import { Widget } from "./widget/widget.np.js";
 import { Center } from "./widget/center.np.js";
@@ -14,6 +15,7 @@ import { ListView } from "./widget/list-view.np.js";
 import { ListViewDeleteOperation } from "./widget/list-view-delete-operation.np.js";
 import { TextFieldChangedEvent } from "./widget/text-field-changed-event.np.js";
 import { Column } from "./widget/column.np.js";
+import { Slider } from "./widget/slider.np.js";
 import { Text } from "./widget/text.np.js";
 import { ListViewOperation } from "./widget/list-view-operation.np.js";
 import { ListViewBatchOperations } from "./widget/list-view-batch-operations.np.js";
@@ -33,6 +35,8 @@ function makeNanoPackMessage(
       return TextField.fromReader(reader, offset);
     case 1006836449:
       return Row.fromReader(reader, offset);
+    case 1030062961:
+      return SliderValueChangedEvent.fromReader(reader, offset);
     case 1100735111:
       return ListViewItem.fromReader(reader, offset);
     case 1676374721:
@@ -49,6 +53,8 @@ function makeNanoPackMessage(
       return TextFieldChangedEvent.fromReader(reader, offset);
     case 2415007766:
       return Column.fromReader(reader, offset);
+    case 3373588321:
+      return Slider.fromReader(reader, offset);
     case 3495336243:
       return Text.fromReader(reader, offset);
     case 3516816492:
