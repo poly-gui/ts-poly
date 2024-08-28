@@ -1,40 +1,38 @@
-interface WindowConfig {
-	tag: string
-	width: number
-	height: number
-	title: string
-}
+import type { PolyApplication } from "./application.js"
+import type { PolyWidget, Widget } from "./widget/widget.js"
 
-interface Window {
-	tag: string
-	width: number
-	height: number
-	title: string
-}
+class Window {
+	public width = 500
+	public height = 300
+	public title = "Poly Window"
 
-interface WindowManagerDelegate {
-	createWindow(config: WindowConfig): void
-}
+	private _content: PolyWidget | null = null
+	public get content() {
+		return this._content
+	}
 
-class WindowManager {
-	private activeWindows = new Map<string, Window>()
+	constructor(
+		public readonly context: PolyApplication,
+		public readonly tag: string,
+	) {}
 
-	constructor(private delegate: WindowManagerDelegate) {}
+	public show() {
+		this.context.nativeLayer.createWindow(
+			this.title,
+			"",
+			this.width,
+			this.height,
+			this.tag,
+		)
+	}
 
-	public createAndShowWindow(config: WindowConfig) {
-		if (this.activeWindows.has(config.tag)) {
-			return
-		}
-		const window: Window = {
-			tag: config.tag,
-			width: config.width,
-			height: config.height,
-			title: config.title,
-		}
-		this.delegate.createWindow(config)
-		this.activeWindows.set(config.tag, window)
+	public showContent(widgetDescriptor: Widget) {
+		this.context.nativeLayer.createWidget(widgetDescriptor, this.tag)
+	}
+
+	public clearContent() {
+		this.context.nativeLayer.clearWindow(this.tag)
 	}
 }
 
-export type { Window, WindowConfig, WindowManagerDelegate }
-export { WindowManager }
+export { Window }

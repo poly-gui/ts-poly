@@ -3,14 +3,9 @@ import {
 	PortableLayerServiceServer,
 	type IPortableLayerService,
 } from "./rpc/portable-layer-service.np.js"
-import {
-	NodeStandardIoRpcChannel,
-	type RpcClientChannel,
-	type RpcServerChannel,
-} from "nanopack/rpc"
+import { NodeStandardIoRpcChannel } from "nanopack/rpc"
 import { NativeLayerServiceClient } from "./rpc/native-layer-service.np.js"
 import { IdRegistry } from "./id-registry.js"
-import { WindowManager, type WindowManagerDelegate } from "./window.js"
 
 type PolyApplicationTransport = { type: "node-stdio" }
 
@@ -37,19 +32,6 @@ class PolyApplication {
 			this.callbackRegistry.invokeVoidCallback(handle, args)
 		},
 	}
-
-	private windowManagerDelegate: WindowManagerDelegate = {
-		createWindow: (config) => {
-			this.nativeLayer.createWindow(
-				config.title,
-				"",
-				config.width,
-				config.height,
-				config.tag,
-			)
-		},
-	}
-	public readonly windowManager = new WindowManager(this.windowManagerDelegate)
 
 	public constructor(private config: ApplicationConfig) {
 		this.rpcChannel = new NodeStandardIoRpcChannel()
