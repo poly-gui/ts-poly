@@ -28,6 +28,7 @@ interface INativeLayerService {
     widgets: Widget[],
     args: NanoPackMessage | null,
   ): void;
+  clearWindow(windowTag: string): void;
 }
 
 class NativeLayerServiceServer extends RpcServer {
@@ -156,6 +157,21 @@ class NativeLayerServiceServer extends RpcServer {
 
       return writer;
     });
+    this.on("clear_window", (reader, offset, msgId) => {
+      let ptr = offset;
+      const windowTagByteLength = reader.readInt32(ptr);
+      ptr += 4;
+      const windowTag = reader.readString(ptr, windowTagByteLength);
+      ptr += windowTagByteLength;
+
+      this.impl.clearWindow(windowTag);
+      const writer = new NanoBufWriter(6, false);
+      writer.appendUint8(RpcMessageType.RESPONSE);
+      writer.appendUint32(msgId);
+      writer.appendUint8(0);
+
+      return writer;
+    });
   }
 }
 
@@ -263,6 +279,21 @@ class NativeLayerServiceClient extends RpcClient {
     } else {
       writer.appendBoolean(false);
     }
+
+    const reader = await this.sendRequestData(msgId, writer.bytes);
+    let ptr = 5;
+    const errFlag = reader.readUint8(ptr++);
+    if (errFlag) {
+      throw new Error("error");
+    }
+  }
+  async clearWindow(windowTag: string): Promise<void> {
+    const writer = new NanoBufWriter(9 + 12, false);
+    const msgId = this.newMessageId();
+    writer.appendUint8(RpcMessageType.REQUEST);
+    writer.appendUint32(msgId);
+    writer.appendStringAndSize("clear_window");
+    const windowTagByteLength = writer.appendStringAndSize(windowTag);
 
     const reader = await this.sendRequestData(msgId, writer.bytes);
     let ptr = 5;
