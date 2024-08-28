@@ -15,10 +15,6 @@
 			"import": "./dist/bridge/bridge.js",
 			"types": "./dist/bridge/bridge.d.ts"
 		},
-		"./window": {
-			"import": "./dist/windowing/create-window.js",
-			"types": "./dist/windowing/create-window.d.ts"
-		},
 		"./widget": {
 			"import": "./dist/widget/index.js",
 			"types": "./dist/widget/index.d.ts"
