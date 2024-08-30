@@ -1,4 +1,3 @@
-import type { NanoPackMessage } from "nanopack"
 import type { PolyApplication } from "../application.js"
 import { ListViewBatchOperations } from "../rpc/widget/list-view-batch-operations.np.js"
 import { ListViewDeleteOperation } from "../rpc/widget/list-view-delete-operation.np.js"
@@ -89,7 +88,7 @@ class ListView<TItem extends ListViewItem> extends PolyWidget {
 		this.pendingOperations.push(removeOperation)
 	}
 
-	private onRequestCreate(args: NanoPackMessage): ListViewItemMsg | null {
+	private onRequestCreate(args: unknown): ListViewItemMsg | null {
 		if (!this.onCreate || !this.onBind) {
 			return null
 		}
@@ -108,7 +107,7 @@ class ListView<TItem extends ListViewItem> extends PolyWidget {
 		return new ListViewItemMsg(itemTag, listViewItem.widget().descriptor())
 	}
 
-	private onRequestBind(arg: NanoPackMessage) {
+	private onRequestBind(arg: unknown) {
 		if (!this.onBind) return
 		const { sectionIndex, itemIndex, itemTag } = arg as ListViewItemConfig
 		if (itemTag === null || sectionIndex === null || itemIndex === null) return

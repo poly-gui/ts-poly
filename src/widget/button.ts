@@ -24,7 +24,7 @@ class Button extends PolyWidget {
 		return new ButtonMessage(this.tag, this.label, this.onClickHandle)
 	}
 
-	private onClickEvent(arg: NanoPackMessage) {
+	private onClickEvent(arg: unknown) {
 		this.onClick?.(arg as ClickEventMessage)
 	}
 }

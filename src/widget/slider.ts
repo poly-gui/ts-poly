@@ -39,7 +39,7 @@ class Slider extends PolyWidget {
 		)
 	}
 
-	private onValueChanged(arg: NanoPackMessage) {
+	private onValueChanged(arg: unknown) {
 		this.onChanged?.(arg as SliderValueChangedEvent)
 	}
 }

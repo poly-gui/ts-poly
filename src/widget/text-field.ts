@@ -1,4 +1,3 @@
-import type { NanoPackMessage } from "nanopack"
 import { PolyWidget, type Widget } from "./widget.js"
 import type { TextFieldChangedEvent as TextFieldChangedEventMessage } from "../rpc/widget/text-field-changed-event.np.js"
 import { TextField as TextFieldMessage } from "../rpc/widget/text-field.np.js"
@@ -33,7 +32,7 @@ class TextField extends PolyWidget {
 		)
 	}
 
-	private onValueChangedEvent(args: NanoPackMessage) {
+	private onValueChangedEvent(args: unknown) {
 		const event = args as TextFieldChangedEventMessage
 		this.value = event.newValue
 		this.onChanged?.(event)

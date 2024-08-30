@@ -22,11 +22,18 @@ interface INativeLayerService {
     tag: string,
   ): void;
   createWidget(widget: Widget, windowTag: string): void;
+  appendNewWidget(child: Widget, parentTag: number): void;
   updateWidget(tag: number, widget: Widget, args: NanoPackMessage | null): void;
   updateWidgets(
     tag: number[],
     widgets: Widget[],
     args: NanoPackMessage | null,
+  ): void;
+  removeWidget(tag: number): void;
+  insertWidgetBefore(
+    widget: Widget,
+    beforeWidget: Widget,
+    parentTag: number,
   ): void;
   clearWindow(windowTag: string): void;
 }
@@ -78,6 +85,25 @@ class NativeLayerServiceServer extends RpcServer {
       ptr += windowTagByteLength;
 
       this.impl.createWidget(widget, windowTag);
+      const writer = new NanoBufWriter(6, false);
+      writer.appendUint8(RpcMessageType.RESPONSE);
+      writer.appendUint32(msgId);
+      writer.appendUint8(0);
+
+      return writer;
+    });
+    this.on("append_new_widget", (reader, offset, msgId) => {
+      let ptr = offset;
+      const maybeChild = makeWidget(reader, ptr);
+      if (!maybeChild) {
+        return null;
+      }
+      const child = maybeChild.result;
+      ptr += maybeChild.bytesRead;
+      const parentTag = reader.readUint32(ptr);
+      ptr += 4;
+
+      this.impl.appendNewWidget(child, parentTag);
       const writer = new NanoBufWriter(6, false);
       writer.appendUint8(RpcMessageType.RESPONSE);
       writer.appendUint32(msgId);
@@ -157,6 +183,44 @@ class NativeLayerServiceServer extends RpcServer {
 
       return writer;
     });
+    this.on("remove_widget", (reader, offset, msgId) => {
+      let ptr = offset;
+      const tag = reader.readUint32(ptr);
+      ptr += 4;
+
+      this.impl.removeWidget(tag);
+      const writer = new NanoBufWriter(6, false);
+      writer.appendUint8(RpcMessageType.RESPONSE);
+      writer.appendUint32(msgId);
+      writer.appendUint8(0);
+
+      return writer;
+    });
+    this.on("insert_widget_before", (reader, offset, msgId) => {
+      let ptr = offset;
+      const maybeWidget = makeWidget(reader, ptr);
+      if (!maybeWidget) {
+        return null;
+      }
+      const widget = maybeWidget.result;
+      ptr += maybeWidget.bytesRead;
+      const maybeBeforeWidget = makeWidget(reader, ptr);
+      if (!maybeBeforeWidget) {
+        return null;
+      }
+      const beforeWidget = maybeBeforeWidget.result;
+      ptr += maybeBeforeWidget.bytesRead;
+      const parentTag = reader.readUint32(ptr);
+      ptr += 4;
+
+      this.impl.insertWidgetBefore(widget, beforeWidget, parentTag);
+      const writer = new NanoBufWriter(6, false);
+      writer.appendUint8(RpcMessageType.RESPONSE);
+      writer.appendUint32(msgId);
+      writer.appendUint8(0);
+
+      return writer;
+    });
     this.on("clear_window", (reader, offset, msgId) => {
       let ptr = offset;
       const windowTagByteLength = reader.readInt32(ptr);
@@ -211,6 +275,24 @@ class NativeLayerServiceClient extends RpcClient {
     writer.reserveHeader(widget.headerSize);
     const widgetByteSize = widget.writeTo(writer, widgetWriteOffset);
     const windowTagByteLength = writer.appendStringAndSize(windowTag);
+
+    const reader = await this.sendRequestData(msgId, writer.bytes);
+    let ptr = 5;
+    const errFlag = reader.readUint8(ptr++);
+    if (errFlag) {
+      throw new Error("error");
+    }
+  }
+  async appendNewWidget(child: Widget, parentTag: number): Promise<void> {
+    const writer = new NanoBufWriter(9 + 17, false);
+    const msgId = this.newMessageId();
+    writer.appendUint8(RpcMessageType.REQUEST);
+    writer.appendUint32(msgId);
+    writer.appendStringAndSize("append_new_widget");
+    const childWriteOffset = writer.currentSize;
+    writer.reserveHeader(child.headerSize);
+    const childByteSize = child.writeTo(writer, childWriteOffset);
+    writer.appendUint32(parentTag);
 
     const reader = await this.sendRequestData(msgId, writer.bytes);
     let ptr = 5;
@@ -279,6 +361,49 @@ class NativeLayerServiceClient extends RpcClient {
     } else {
       writer.appendBoolean(false);
     }
+
+    const reader = await this.sendRequestData(msgId, writer.bytes);
+    let ptr = 5;
+    const errFlag = reader.readUint8(ptr++);
+    if (errFlag) {
+      throw new Error("error");
+    }
+  }
+  async removeWidget(tag: number): Promise<void> {
+    const writer = new NanoBufWriter(9 + 13 + 4, false);
+    const msgId = this.newMessageId();
+    writer.appendUint8(RpcMessageType.REQUEST);
+    writer.appendUint32(msgId);
+    writer.appendStringAndSize("remove_widget");
+    writer.appendUint32(tag);
+
+    const reader = await this.sendRequestData(msgId, writer.bytes);
+    let ptr = 5;
+    const errFlag = reader.readUint8(ptr++);
+    if (errFlag) {
+      throw new Error("error");
+    }
+  }
+  async insertWidgetBefore(
+    widget: Widget,
+    beforeWidget: Widget,
+    parentTag: number,
+  ): Promise<void> {
+    const writer = new NanoBufWriter(9 + 20, false);
+    const msgId = this.newMessageId();
+    writer.appendUint8(RpcMessageType.REQUEST);
+    writer.appendUint32(msgId);
+    writer.appendStringAndSize("insert_widget_before");
+    const widgetWriteOffset = writer.currentSize;
+    writer.reserveHeader(widget.headerSize);
+    const widgetByteSize = widget.writeTo(writer, widgetWriteOffset);
+    const beforeWidgetWriteOffset = writer.currentSize;
+    writer.reserveHeader(beforeWidget.headerSize);
+    const beforeWidgetByteSize = beforeWidget.writeTo(
+      writer,
+      beforeWidgetWriteOffset,
+    );
+    writer.appendUint32(parentTag);
 
     const reader = await this.sendRequestData(msgId, writer.bytes);
     let ptr = 5;

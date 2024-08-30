@@ -1,8 +1,8 @@
 import type { NanoPackMessage } from "nanopack"
 
 type CallbackHandle = number
-type Callback = (arg: NanoPackMessage) => NanoPackMessage | null
-type VoidCallback = (arg: NanoPackMessage) => void
+type Callback<TArg = unknown> = (arg: TArg) => NanoPackMessage | null
+type VoidCallback<TArg = unknown> = (arg: TArg) => void
 
 class CallbackRegistry {
 	private cbMap: Map<CallbackHandle, Callback | VoidCallback> = new Map()
