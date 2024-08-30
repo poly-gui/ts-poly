@@ -1,5 +1,5 @@
 {
-	"name": "poly",
+	"name": "@poly-gui/core",
 	"type": "module",
 	"files": ["dist", "LICENSE", "README.md", "package.json"],
 	"exports": {
@@ -19,9 +19,9 @@
 			"import": "./dist/widget/index.js",
 			"types": "./dist/widget/index.d.ts"
 		},
-		"./rpc": {
-			"import": "./dist/rpc.js",
-			"types": "./dist/rpc.d.ts"
+		"./rpc/*.js": {
+			"import": "./dist/rpc/*.js",
+			"types": "./dist/rpc/*.d.ts"
 		}
 	},
 	"scripts": {
