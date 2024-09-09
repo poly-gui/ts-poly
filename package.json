@@ -34,7 +34,7 @@
 		"bun-types": "latest"
 	},
 	"dependencies": {
-		"nanopack": "github:poly-gui/ts-nanopack#main"
+		"nanopack": "nanopack-buffer/ts-nanopack"
 	},
 	"peerDependencies": {
 		"typescript": "^5.0.0"
