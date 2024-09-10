@@ -1,5 +1,5 @@
 {
-  description = "my website";
+  description = "Core components for TypeScript Poly.";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs?tag=24.05";
